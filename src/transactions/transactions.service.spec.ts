@@ -14,7 +14,12 @@ describe('TransactionsService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [TransactionsService,
+      providers: [{provide: TransactionsService, 
+      useValue: {
+        sendMoney: jest.fn(),
+        fundAccount: jest.fn(),
+        withdrawFromAccount: jest.fn(),
+      }},
       {
         provide: TransactionsRepository,
         useValue: {

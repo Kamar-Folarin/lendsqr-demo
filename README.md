@@ -9,7 +9,7 @@ This is an MPV wallet service where:
 * A user can withdraw funds from their account.
 
 
-#### Entity Relationship Diagram
+### Entity Relationship Diagram
 
 ![E-R diagram](https://app.diagrams.net/index.html#G1hM14WL3M-wtEgES-6o-M1m8TsFcM3BF_)
 
