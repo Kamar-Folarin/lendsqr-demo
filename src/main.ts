@@ -21,6 +21,7 @@ async function bootstrap() {
     .setVersion('1.0')
     .addTag('users')
     .addBearerAuth()
+    .setExternalDoc('PostmanCollection', '-json')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/v1/docs', app, document);
