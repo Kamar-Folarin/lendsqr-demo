@@ -57,7 +57,7 @@ export class WalletService {
     return this.walletRepository.update(walletRequest.walletId, transactionDto);
   }
 
-  async getWalletBalance(
+  async getWallet(
     userId: string,
     walletRequest: { walletId: string },
   ): Promise<IWallet> {

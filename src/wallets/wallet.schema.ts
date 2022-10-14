@@ -19,16 +19,7 @@ export class WalletSchema {
         table.double('balance').unsigned().defaultTo(0);
         table.boolean('PND').defaultTo(false);
         table.boolean('PNC').defaultTo(false);
-        table
-          .dateTime('createdAt')
-          .notNullable()
-          .defaultTo(this.knex.raw('CURRENT_TIMESTAMP'));
-        table
-          .dateTime('updatedAt')
-          .notNullable()
-          .defaultTo(
-            this.knex.raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
-          );
+        table.timestamps(true);
       });
     }
   }

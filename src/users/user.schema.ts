@@ -19,16 +19,7 @@ export class UserSchema {
         table.string('username', 255).unique().notNullable();
         table.string('hash', 255).notNullable();
         table.string('salt', 255).notNullable();
-        table
-          .dateTime('createdAt')
-          .notNullable()
-          .defaultTo(this.knex.raw('CURRENT_TIMESTAMP'));
-        table
-          .dateTime('updatedAt')
-          .notNullable()
-          .defaultTo(
-            this.knex.raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
-          );
+        table.timestamps(true);
       });
     }
   }

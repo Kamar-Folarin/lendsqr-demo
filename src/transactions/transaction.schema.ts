@@ -19,16 +19,8 @@ export class TransactionSchema {
         table.string('toAccount', 255).notNullable();
         table.string('userId', 255).notNullable();
         table.string('receiverId', 255).notNullable();
-        table
-          .dateTime('createdAt')
-          .notNullable()
-          .defaultTo(this.knex.raw('CURRENT_TIMESTAMP'));
-        table
-          .dateTime('updatedAt')
-          .notNullable()
-          .defaultTo(
-            this.knex.raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
-          );
+        table.string('status', 255).notNullable();
+        table.timestamps(true);
       });
     }
   }

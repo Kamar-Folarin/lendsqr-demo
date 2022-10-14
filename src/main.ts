@@ -14,17 +14,15 @@ async function bootstrap() {
       forbidNonWhitelisted: false, // Will remove extra properties, but not throw an error
     }),
   );
-  app.setGlobalPrefix('api/v1');
   const config = new DocumentBuilder()
     .setTitle('DEMO CREDIT  WALLET API server')
     .setDescription('Demo credit wallet API server documentation')
     .setVersion('1.0')
     .addTag('users')
     .addBearerAuth()
-    .setExternalDoc('PostmanCollection', '-json')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/v1/docs', app, document);
+  SwaggerModule.setup('/docs', app, document);
   app.use(helmet());
   await app.listen(3000);
 }

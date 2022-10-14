@@ -4,6 +4,7 @@ export interface Transactions {
   title: string;
   fromAccount: string;
   toAccount: string;
+  status: string;
 }
 
 export interface ICreateTransaction {
@@ -19,4 +20,8 @@ export interface ITransactions {
   title: string;
   fromAccount: string;
   toAccount: string;
+}
+
+export interface ITransactionUpdateQuery {
+  status: string;
 }

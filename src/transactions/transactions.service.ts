@@ -14,11 +14,22 @@ export class TransactionsService {
   ) {}
 
   async sendMoney(userId: string, dto: TransferFundsDto)  {
-    // Get the user
+    const transactionDto = {
+      fromAccount: dto.fromAccount,
+      toAccount: dto.toAccount,
+      amount: dto.amount,
+      title: 'send-money',
+      status: 'PENDING',
+    };
+
+    const createTransactionState = await this.transactionsRepository.create(transactionDto);
+   
+    if ( createTransactionState ){
+       // Get the user
     const [sender, senderWallet, receiverWallet] = await Promise.all([
       await this.userService.getUserById(userId),
-      await this.walletService.getWalletBalance(userId,{walletId: dto.fromAccount}),
-      await this.walletService.getWalletBalance(dto.receiverId,{walletId: dto.toAccount})
+      await this.walletService.getWallet(userId,{walletId: dto.fromAccount}),
+      await this.walletService.getWallet(dto.receiverId,{walletId: dto.toAccount})
     ]);
 
     // Find the amount the sender wants to send
@@ -28,62 +39,81 @@ export class TransactionsService {
     if (senderNewBalance < 0) {
       throw new NotFoundException('Insufficient funds');
     }
+    if(senderWallet.PND == true){
+      throw new Error('PNC Wallet cannot be debited');
+    }
+    const debitSender =  await this.walletService.debitWallet(userId, {walletId: dto.fromAccount, amount: dto.amount,});
 
-    // Find the amount
-    const receiverNewBalance = receiverWallet.balance + dto.amount;
-
-    // Update the Wallet balances
-    await Promise.all([
-      this.walletService.debitWallet(userId, {walletId: dto.fromAccount, amount: dto.amount,}),
-      this.walletService.creditWallet(userId, {walletId: dto.toAccount, amount: dto.amount,}),
-    ]);
-
-    const transactionDto = {
-      fromAccount: dto.fromAccount,
-      toAccount: dto.toAccount,
-      amount: dto.amount,
-      title: 'send-money',
-    };
-
-    this.transactionsRepository.create(transactionDto);
+    if (!debitSender) {
+      throw new NotFoundException('Cannot send funds');
+    }
+    if(receiverWallet.PNC == true){
+      throw new Error('Receiver PND wallet cannot be credited')
+    }
+    const creditWallet = this.walletService.creditWallet(dto.receiverId, {walletId: dto.toAccount, amount: dto.amount,});
+    if(!creditWallet){
+      await this.transactionsRepository.update(createTransactionState.id, { status: 'FAILED' });
+      throw new NotFoundException('Maximum retry');
+    }
+     // Update the transaction status
+    this.transactionsRepository.update(createTransactionState.id, { status: 'SUCCESS' });
+    }
   }
 
 
   async fundAccount(userId: string,account:string, amount: number)  {
-    const user = await this.walletService.getWalletBalance(userId,{walletId: account});
-    const newBalance = user.balance + amount;
-
-    if (newBalance) {
-      this.walletService.creditWallet(userId, {walletId: account, amount: amount});
-    }
-
     const transactionDto = {
       fromAccount: userId,
       toAccount: userId,
       amount: amount,
       title: 'fund your account',
+      status: 'PENDING',
     };
 
-    await this.transactionsRepository.create(transactionDto);
+    const createTransactionState = await this.transactionsRepository.create(transactionDto);
+    if(!createTransactionState){
+      throw new NotFoundException('Failed');
+    }
+    const wallet = await this.walletService.getWallet(userId,{walletId: account});
+    if(wallet.PNC == true){
+      throw new Error('PNC wallet cannot be credited');
+    }
+    const creditWallet = this.walletService.creditWallet(userId, {walletId: account, amount: amount});
+    if(!creditWallet){
+      await this.transactionsRepository.update(createTransactionState.id, { status: 'FAILED' });
+      throw new NotFoundException('Failed to credit');
+    }
+    await this.transactionsRepository.update(createTransactionState.id, { status: 'SUCCESS' });
+  
   }
 
   async withdrawFromAccount(userId: string,fromAccount: string, amount: number) {
-    const wallet = await this.walletService.getWalletBalance(userId,{walletId: fromAccount});
-    const newBalance = wallet.balance - amount;
-
-    if (newBalance < 0) {
-      throw new NotFoundException('Insufficient funds');
-    }
-
-    this.walletService.debitWallet(userId, {walletId: fromAccount, amount: amount});
-
     const transactionDto = {
       fromAccount: fromAccount,
       toAccount: null,
       amount: amount,
       title: 'Withdraw from account',
+      status: 'PENDING',
     };
 
-    await this.transactionsRepository.create(transactionDto);
+    const transactionState = await this.transactionsRepository.create(transactionDto);
+    if (!transactionState) {
+      throw new NotFoundException('Failed');
+    }
+
+    const wallet = await this.walletService.getWallet(userId,{walletId: fromAccount});
+    if(wallet.PND == true){
+      throw new Error('PND wallet cannot be debited');
+    }
+
+    const debitWallet = await this.walletService.debitWallet(userId, {walletId: fromAccount, amount: amount});
+
+    if (!debitWallet) {
+      await this.transactionsRepository.update(transactionState.id, { status: 'FAILED' });
+      throw new NotFoundException('Failed to debit');
+    }
+
+    await this.transactionsRepository.update(transactionState.id, { status: 'SUCCESS' });
+    
   }
 }

@@ -61,7 +61,7 @@ export class WalletsController {
     @AuthUser() user: User,
     @Param('walletId') walletId: string,
   ) {
-    return await this.walletService.getWalletBalance(user.id, {
+    return await this.walletService.getWallet(user.id, {
       walletId: walletId,
     });
   }

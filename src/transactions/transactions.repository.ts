@@ -3,7 +3,7 @@ import { KNEX_CONNECTION } from '@nestjsplus/knex';
 import { Knex } from 'knex';
 import { InjectModel } from 'nest-knexjs';
 import { CreateTransactionsDto } from './dto/create-transaction.dto';
-import { ICreateTransaction, Transactions } from './interface/transactions.interface';
+import { ICreateTransaction, ITransactionUpdateQuery, Transactions } from './interface/transactions.interface';
 import { TransactionSchemaName } from './transaction.schema';
 import {v4 as uuidv4} from 'uuid';
 
@@ -46,6 +46,21 @@ export class TransactionsRepository {
       .then((result: Transactions[]) => result[0]);
     return Transactions;
     }catch(err){
+      throw new NotFoundException(err);
+    }
+  }
+
+  async update(
+    transactionId: string,
+    transactionUpdateQuery: Partial<ITransactionUpdateQuery>,
+  ) {
+    try {
+      const transaction: Transactions = await this.model
+        .where('id', transactionId)
+        .update(transactionUpdateQuery);
+        console.log('transaction updated', transaction);
+      return transaction;
+    } catch (err) {
       throw new NotFoundException(err);
     }
   }

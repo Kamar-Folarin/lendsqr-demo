@@ -10,6 +10,7 @@ import { WalletModule } from './wallets/wallet.module';
 import { KnexModule } from '@nestjsplus/knex';
 import { PassportModule } from '@nestjs/passport';
 
+console.log('Hoeelo',process.env.USER) // scroll up for me
 @Module({
   imports: [
     KnexModule.register({
@@ -17,7 +18,7 @@ import { PassportModule } from '@nestjs/passport';
       useNullAsDefault: true,
       connection: {
         host: process.env.HOST,
-        user: process.env.USER,
+        user: process.env.USERNAME,
         password: process.env.PASSWORD,
         database: process.env.DATABASE,
         port: Number(process.env.PORT),

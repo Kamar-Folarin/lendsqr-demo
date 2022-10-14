@@ -7,7 +7,6 @@ export interface User {
     password: string;
     salt: string;
     hash: string;
-    balance: number;
 }
 
 
